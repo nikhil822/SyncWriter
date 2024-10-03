@@ -1,15 +1,15 @@
-import express, {Request, Response, Express} from 'express'
-import dotenv from 'dotenv'
+import express, { Request, Response, Express } from "express";
+import dotenv from "dotenv";
+import { PrismaClient } from "@prisma/client";
 
-dotenv.config()
+dotenv.config();
 
-const app: Express = express()
-const port = 8080
+const app: Express = express();
+app.use(express.json());
+const port = 8080;
+const prisma = new PrismaClient();
 
-app.get('/', (req: Request, res: Response) => {
-    res.send("Hello ts484")
-})
 
 app.listen(port, () => {
-    console.log("server listening at ", port)
-})
+  console.log("server listening at ", port);
+});
