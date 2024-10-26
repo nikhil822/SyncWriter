@@ -27,8 +27,19 @@ const registerValidator = [
   }),
 ];
 
+const resetPasswordValidator = [
+  body("email")
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Must provide a valid email address"),
+];
+
+const confirmResetPasswordValidator = [
+  
+]
+
 export const userValidator = {
   register: registerValidator,
-  //   resetPassword: resetPasswordValidator,
+  resetPassword: resetPasswordValidator,
   //   confirmResetPassword: confirmResetPasswordValidator,
 };
