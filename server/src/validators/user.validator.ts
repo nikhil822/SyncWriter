@@ -35,11 +35,22 @@ const resetPasswordValidator = [
 ];
 
 const confirmResetPasswordValidator = [
-  
-]
+  body("password1")
+    .isLength({ min: 8, max: 20 })
+    .withMessage("Password must be 8 to 25 characters"),
+  body("password1")
+    .matches(/\d/)
+    .withMessage("Password must contain at least one digit."),
+  body("password2").custom((value, { req }) => {
+    if (value !== req.body.password1) {
+      throw new Error("Passwords must match.");
+    }
+    return true;
+  }),
+];
 
 export const userValidator = {
   register: registerValidator,
   resetPassword: resetPasswordValidator,
-  //   confirmResetPassword: confirmResetPasswordValidator,
+  confirmResetPassword: confirmResetPasswordValidator,
 };

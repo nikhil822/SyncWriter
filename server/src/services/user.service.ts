@@ -64,13 +64,51 @@ const logoutUser = async (userId: number) => {
 
 const findUserById = async (id: number) => {
   return await prisma.user.findUnique({ where: { id } });
+};
+
+const resetPassword = async (user: { id: number; email: string }) => {
+  const passwordResetToken = jwt.sign(
+    { id: user.id, email: user.email },
+    "password_reset",
+    { expiresIn: "24h" }
+  );
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordResetToken },
+  });
+  // await sendPasswordResetEmail(user);
+};
+
+const updatePassword = async (userId: number, password: string) => {
+  const salt = await genSalt();
+  const hashedPassword = await hash(password, salt);
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword, passwordResetToken: null },
+  });
 }
 
-const resetPassword = async (user: {id : number; email: string}) => {
-  const passwordResetToken = jwt.sign({id: user.id, email: user.email}, "password_reset", {expiresIn: "24h"})
-  await prisma.user.update({where: {id: user.id}, data: {passwordResetToken}})
-  await sendPasswordResetEmail(user)
+const findUserByVerificationToken = async ( email: string, verificationToken: string) => {
+  return await prisma.user.findFirst({
+    where: { email, verificationToken },
+  });
 }
+
+const updateIsVerified = async (userId: number, isVerified: boolean) => {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isVerified, verificationToken: null },
+  });
+};
+
+const findUserByPasswordResetToken = async (
+  email: string,
+  passwordResetToken: string
+) => {
+  return await prisma.user.findFirst({
+    where: { email, passwordResetToken },
+  });
+};
 
 export const userService = {
   findUserByEmail,
@@ -81,4 +119,8 @@ export const userService = {
   logoutUser,
   findUserById,
   resetPassword,
+  findUserByPasswordResetToken,
+  updatePassword,
+  updateIsVerified,
+  findUserByVerificationToken,
 } as const;
