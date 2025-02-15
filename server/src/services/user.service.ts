@@ -58,10 +58,27 @@ const getIsTokenActive = async (token: string) => {
   return Boolean(await prisma.refreshToken.findFirst({ where: { token } }));
 };
 
+const logoutUser = async (userId: number) => {
+  await prisma.refreshToken.deleteMany({ where: { userId } });
+};
+
+const findUserById = async (id: number) => {
+  return await prisma.user.findUnique({ where: { id } });
+}
+
+const resetPassword = async (user: {id : number; email: string}) => {
+  const passwordResetToken = jwt.sign({id: user.id, email: user.email}, "password_reset", {expiresIn: "24h"})
+  await prisma.user.update({where: {id: user.id}, data: {passwordResetToken}})
+  await sendPasswordResetEmail(user)
+}
+
 export const userService = {
   findUserByEmail,
   createUser,
   checkPassword,
   generateAuthResponse,
   getIsTokenActive,
+  logoutUser,
+  findUserById,
+  resetPassword,
 } as const;
