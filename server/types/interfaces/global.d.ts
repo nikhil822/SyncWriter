@@ -3,7 +3,7 @@ declare global {
     msg: string;
   }
 
-  interface RequstUser {
+  interface RequestUser {
     id: string,
     email: string,
     roles: Array<string>

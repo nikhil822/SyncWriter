@@ -17,6 +17,7 @@ const express_validator_1 = require("express-validator");
 const catch_async_1 = __importDefault(require("../../middlewares/catch-async"));
 const user_service_1 = require("../../services/user.service");
 const responses_1 = require("../../../responses");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const login = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
@@ -37,4 +38,35 @@ const login = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0,
     const authResponse = yield user_service_1.userService.generateAuthResponse(user);
     return res.status(200).json(authResponse);
 }));
-exports.authController = { login };
+const refreshToken = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const err = (0, express_validator_1.validationResult)(req);
+    if (!err.isEmpty()) {
+        return res.status(400).json(err);
+    }
+    const { token: refreshToken } = req.body;
+    const isTokenActive = yield user_service_1.userService.getIsTokenActive(refreshToken);
+    if (!isTokenActive)
+        return res.sendStatus(403);
+    jsonwebtoken_1.default.verify(refreshToken, "refresh_token", (error, decoded) => __awaiter(void 0, void 0, void 0, function* () {
+        if (error)
+            return res.sendStatus(403);
+        try {
+            const { id, email, roles } = decoded;
+            const user = { id, email, roles };
+            const authResponse = yield user_service_1.userService.generateAuthResponse(user);
+            return res.status(200).json(authResponse);
+        }
+        catch (error) {
+            console.error(error);
+            res.sendStatus(403);
+        }
+    }));
+}));
+const logout = (0, catch_async_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.user)
+        return res.sendStatus(401);
+    const userId = parseInt(req.user.id);
+    yield user_service_1.userService.logoutUser(userId);
+    return res.sendStatus(200);
+}));
+exports.authController = { login, refreshToken, logout };

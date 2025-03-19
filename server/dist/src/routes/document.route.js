@@ -1,0 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.document = void 0;
+const express_1 = require("express");
+const auth_1 = require("../middlewares/auth");
+const document_controller_1 = require("../controllers/document/document.controller");
+const document_validator_1 = require("../validators/document.validator");
+const share_validator_1 = require("../validators/share.validator");
+const share_controller_1 = require("../controllers/document/share/share.controller");
+const router = (0, express_1.Router)();
+exports.document = router;
+router.get("/:id", auth_1.authenticate, document_controller_1.getOne);
+router.get('/', auth_1.authenticate, document_controller_1.getAll);
+router.put('/:id', auth_1.authenticate, document_validator_1.documentValidator.update, document_controller_1.update);
+router.post('/', auth_1.authenticate, document_controller_1.create);
+router.delete('/:id', auth_1.authenticate, document_controller_1.deleteDocument);
+router.post('/:id/share', auth_1.authenticate, share_validator_1.shareValidator.create, share_controller_1.shareDocument);
+router.delete('/:documentId/share/:userId', auth_1.authenticate, share_controller_1.unshareDocument);

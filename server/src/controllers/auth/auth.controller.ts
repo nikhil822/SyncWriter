@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import catchAsync from "../../middlewares/catch-async";
 import { userService } from "../../services/user.service";

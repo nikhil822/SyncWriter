@@ -43,9 +43,22 @@ const resetPasswordValidator = [
         .normalizeEmail()
         .withMessage("Must provide a valid email address"),
 ];
-const confirmResetPasswordValidator = [];
+const confirmResetPasswordValidator = [
+    (0, express_validator_1.body)("password1")
+        .isLength({ min: 8, max: 20 })
+        .withMessage("Password must be 8 to 25 characters"),
+    (0, express_validator_1.body)("password1")
+        .matches(/\d/)
+        .withMessage("Password must contain at least one digit."),
+    (0, express_validator_1.body)("password2").custom((value, { req }) => {
+        if (value !== req.body.password1) {
+            throw new Error("Passwords must match.");
+        }
+        return true;
+    }),
+];
 exports.userValidator = {
     register: registerValidator,
     resetPassword: resetPasswordValidator,
-    //   confirmResetPassword: confirmResetPasswordValidator,
+    confirmResetPassword: confirmResetPasswordValidator,
 };

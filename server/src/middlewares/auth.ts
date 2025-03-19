@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { VerifyErrors } from "jsonwebtoken";
+import RoleEnum from "../../types/enums/role-enum";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient()
 
 const authenticate = async (
   req: Request,
@@ -22,8 +26,31 @@ const authenticate = async (
         }
         catch(err) {
             console.log(err)
-            return res.sendStatus(403
+            return res.sendStatus(403)
         }
 };
 
-export {authenticate}
+const authorize = (permittedRoles: Array<RoleEnum>) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      if (!req.user) return res.sendStatus(401);
+      const userId = req.user.id;
+  
+      await prisma.userRole.findAll({ where: { userId }, include: Role })
+        .then((data) => {
+          const roles = data.map((userRole) => userRole.role.name);
+          if (
+            permittedRoles.some((permittedRole) => roles.includes(permittedRole))
+          ) {
+            next();
+          } else {
+            return res.sendStatus(403);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          return res.sendStatus(403);
+        });
+    };
+  };
+
+export {authenticate, authorize}
